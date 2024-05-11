@@ -14,6 +14,7 @@ export type Value = {
 };
 
 export type BlockType = {
+  number: number;
   hash: string;
   transactions: string[];
 };

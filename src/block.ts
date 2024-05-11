@@ -1,21 +1,38 @@
 import { Block } from "ethers";
 import { ValueType, type BlockType } from "./values";
-import { assertValueType, type EqFunction } from "./evaluator";
+import { assertArrayType, assertValueType, type EqFunction } from "./evaluator";
 import { provider } from "./functions";
 
 export const rawBlockToVal = (block: Block): BlockType => ({
+  number: block.number,
   hash: block.hash!,
   transactions: block.transactions! as string[],
 });
 
-const funcBlock: EqFunction = {
-  name: "block",
+const funcCurBlock: EqFunction = {
+  name: "curBlock",
   execute: async () => {
     const block = await provider.getBlock("latest");
 
     return {
       type: ValueType.Block,
       value: rawBlockToVal(block as Block),
+    };
+  },
+};
+
+const funcBlockNum: EqFunction = {
+  name: "blockNum",
+  arg: {
+    name: "block",
+    type: ValueType.Block,
+  },
+  execute: async (block) => {
+    assertValueType(block, ValueType.Block);
+
+    return {
+      type: ValueType.Number,
+      value: block.value.number,
     };
   },
 };
@@ -47,7 +64,7 @@ const funcTransactions: EqFunction = {
 
     return {
       type: ValueType.Array,
-      value: block.value.transactions.map((tx) => ({
+      value: (block.value.transactions as string[]).map((tx) => ({
         type: ValueType.String,
         value: tx,
       })),
@@ -55,4 +72,9 @@ const funcTransactions: EqFunction = {
   },
 };
 
-export const blockFunctions = [funcBlock, funcHash, funcTransactions];
+export const blockFunctions = [
+  funcCurBlock,
+  funcBlockNum,
+  funcHash,
+  funcTransactions,
+];
